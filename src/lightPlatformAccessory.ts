@@ -30,7 +30,7 @@ export class LightPlatformAccessory {
 
   async handleOnGet(): Promise<CharacteristicValue> {
     this.platform.log.info(`Checking state for channel ${this.channel}`);
-    return this.platform.channelStates[this.channel - 1];
+    return this.platform.channelStates[this.channel - 1] ?? false;
   }
 
   async handleOnSet(value: CharacteristicValue) {
