@@ -44,9 +44,9 @@ export class LightHomebridgePlatform implements DynamicPlatformPlugin {
 
     this.port = new SerialPort({
       path: this.config.port || '/dev/ttyACM0',
-      baudRate: 9600,
+      baudRate: 115200,
     });
-    this.parser = this.port.pipe(new ReadlineParser({ delimiter: '\n' }));
+    this.parser = this.port.pipe(new ReadlineParser({ delimiter: '\r\n' }));
 
     this.port.on('open', () => {
       this.log.info('Serial port opened');
