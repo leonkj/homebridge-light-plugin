@@ -1,14 +1,22 @@
 {
-  "pluginAlias": "ExampleDynamicPlatform",
+  "pluginAlias": "LightHomebridgePlugin",
   "pluginType": "platform",
+  "singular": true,
+  "strictValidation": false,
   "schema": {
     "type": "object",
     "properties": {
       "name": {
         "title": "Name",
         "type": "string",
-        "required": true,
-        "default": "Example Dynamic Platform"
+        "default": "Light",
+        "required": true
+      },
+      "port": {
+        "title": "Port",
+        "type": "string",
+        "default": "/dev/ttyACM0",
+        "required": true
       }
     }
   }
