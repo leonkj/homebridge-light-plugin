@@ -29,7 +29,7 @@ export class LightPlatformAccessory {
   }
 
   async handleOnGet(): Promise<CharacteristicValue> {
-    this.platform.log.info(`Checking state for channel ${this.channel}`);
+    this.platform.log.debug(`Checking state for channel ${this.channel}`);
     return this.platform.channelStates[this.channel - 1] ?? false;
   }
 
@@ -38,7 +38,7 @@ export class LightPlatformAccessory {
     const command = value ? `ON ${this.channel}\n` : `OFF ${this.channel}\n`;
 
     await this.platform.sendCommand(command);
-    this.platform.log.info(`Command sent: ${command.trim()}`);
+    this.platform.log.debug(`Command sent: ${command.trim()}`);
 
     this.platform.channelStates[this.channel - 1] = value as boolean;
   }

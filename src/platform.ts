@@ -44,7 +44,7 @@ export class LightHomebridgePlatform implements DynamicPlatformPlugin {
 
     this.port = new SerialPort({
       path: this.config.port || '/dev/ttyACM0',
-      baudRate: 115200,
+      baudRate: this.config.baudRate || 115200,
     });
     this.parser = this.port.pipe(new ReadlineParser({ delimiter: '\r\n' }));
 
@@ -61,7 +61,6 @@ export class LightHomebridgePlatform implements DynamicPlatformPlugin {
     });
 
     this.api.on('didFinishLaunching', () => {
-      this.log.info('DidFinishLaunching');
       this.discoverDevices();
     });
   }
@@ -75,26 +74,28 @@ export class LightHomebridgePlatform implements DynamicPlatformPlugin {
       return;
     }
 
-    if (data.includes(',')) {
-      const states = data.split(',').map((s) => s === '1');
-      this.channelStates = states;
+    if (! data.includes(',')) {
+      return;
+    }
 
-      for (let i = 0; i < states.length; i++) {
-        const accessory = Array.from(this.accessories.values()).find(
-          (a) => a.context.device.channel === i + 1,
-        );
+    const states = data.split(',').map((s) => s === '1');
+    this.channelStates = states;
 
-        if (accessory) {
-            accessory.getService(this.Service.Lightbulb)!
-              .getCharacteristic(this.Characteristic.On)
-              .updateValue(states[i] as boolean);
-        }
+    for (let i = 0; i < states.length; i++) {
+      const accessory = Array.from(this.accessories.values()).find(
+        (a) => a.context.device.channel === i + 1,
+      );
+
+      if (accessory) {
+          accessory.getService(this.Service.Lightbulb)!
+            .getCharacteristic(this.Characteristic.On)
+            .updateValue(states[i] as boolean);
       }
     }
   }
 
   configureAccessory(accessory: PlatformAccessory) {
-    this.log.info('Loading accessory from cache:', accessory.displayName);
+    this.log.debug('Loading accessory from cache:', accessory.displayName);
 
     // add the restored accessory to the accessories cache, so we can track if it has already been registered
     this.accessories.set(accessory.UUID, accessory);
@@ -109,13 +110,13 @@ export class LightHomebridgePlatform implements DynamicPlatformPlugin {
       const existingAccessory = Array.from(this.accessories.values()).find(accessory => accessory.UUID === uuid);
 
       if (existingAccessory) {
-        this.log.info(`Updating accessory ${existingAccessory.displayName}`);
+        this.log.debug(`Updating accessory ${existingAccessory.displayName}`);
         new LightPlatformAccessory(this, existingAccessory, device.channel);
 
         continue;
       }
 
-      this.log.info(`Create accessory ${device.name}`);
+      this.log.debug(`Create accessory ${device.name}`);
 
       const accessory = new this.api.platformAccessory(device.name, uuid);
       accessory.context.device = device;
@@ -131,11 +132,9 @@ export class LightHomebridgePlatform implements DynamicPlatformPlugin {
       if (err) {
         this.log.error('Error on write: ', err.message);
       } else {
-        this.log.info(`Command sent: ${command.trim()}`);
+        this.log.debug(`Command sent: ${command.trim()}`);
       }
     });
-
-    await this.updateStatus();
   }
 
   private async updateStatus() {
@@ -143,7 +142,7 @@ export class LightHomebridgePlatform implements DynamicPlatformPlugin {
       if (err) {
         this.log.error('Error on write: ', err.message);
       } else {
-        this.log.info('Command sent: STATUS');
+        this.log.debug('Command sent: STATUS');
       }
     });
   }
@@ -155,7 +154,7 @@ export class LightHomebridgePlatform implements DynamicPlatformPlugin {
       accessories: this.config.accessories,
     };
 
-    this.log.info('Config properties:', properties);
+    this.log.debug('Config properties:', properties);
 
     if (!this.isIterable(properties.accessories)) {
       properties.accessories = [];
